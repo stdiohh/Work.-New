@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101827">
+<title>Strength Log</title>
+<style>
+:root{color-scheme:dark;--bg:#0a101c;--panel:#131e2f;--panel2:#1b2a40;--line:#2b3b53;--txt:#f3f6fb;--muted:#aab7c9;--mint:#a7f3d0;--mintInk:#09251c;--red:#ffb4ab}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:15px system-ui,-apple-system,Segoe UI,sans-serif}
+header{padding:23px 17px 17px;background:linear-gradient(145deg,#1a3045,#0a101c)}header h1{margin:0;font-size:27px}header p{margin:4px 0 0;color:var(--muted)}
+nav{display:flex;gap:7px;padding:10px 12px;overflow:auto;position:sticky;top:0;background:#0a101c;z-index:5;border-bottom:1px solid var(--line)}
+nav button,.btn{border:1px solid var(--line);background:var(--panel2);color:var(--txt);padding:10px 13px;border-radius:11px;font:inherit;white-space:nowrap}
+nav button.active,.primary{background:var(--mint);color:var(--mintInk);border-color:var(--mint);font-weight:700}
+main{max-width:780px;margin:auto;padding:12px 13px 90px}
+section{display:none}section.active{display:block}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:17px;padding:15px;margin:11px 0}
+h2{font-size:19px;margin:0 0 12px}h3{font-size:16px;margin:0 0 7px}
+p{color:var(--muted);line-height:1.45;margin:5px 0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{background:var(--panel2);border-radius:12px;padding:11px}.stat b{font-size:19px;display:block}.stat small,.muted{color:var(--muted)}
+label{display:block;color:var(--muted);font-size:13px;margin:10px 0 5px}
+input,select,textarea{width:100%;background:#0b1422;color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:11px;font:inherit;min-width:0}
+input[type=checkbox]{width:20px;height:20px;accent-color:var(--mint)}
+textarea{resize:vertical}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.actions>*{flex:1}
+.btn{cursor:pointer}.primary{background:var(--mint);color:var(--mintInk);border:0}
+.danger{border-color:#70413e;color:var(--red);background:#301d23}
+.exercise{padding:12px 0;border-bottom:1px solid var(--line)}.exercise:last-child{border:0}
+.exerciseTop{display:flex;align-items:flex-start;gap:10px;justify-content:space-between}.exerciseName{font-weight:650}.exerciseMeta{font-size:13px;color:var(--muted);margin-top:3px}
+.tick{display:flex;align-items:center;gap:8px;margin-top:9px;color:var(--muted);font-size:13px}
+.bar{height:8px;background:#29384e;border-radius:20px;overflow:hidden;margin:11px 0}.bar span{height:100%;display:block;background:var(--mint);width:0}
+.dayrow,.entryrow{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}.dayrow:last-child,.entryrow:last-child{border:0}
+.pill{font-size:12px;background:#263951;padding:4px 8px;border-radius:30px;color:#dce9f7}
+.small{font-size:12px}.empty{padding:14px 0;color:var(--muted)}
+details{border:1px solid var(--line);border-radius:12px;padding:10px;margin:9px 0}summary{cursor:pointer;font-weight:650}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:18px}
+@media(max-width:430px){.grid3{grid-template-columns:1fr 1fr 1fr}.stats b{font-size:17px}.card{padding:13px}}
+</style>
+</head>
+<body>
+<header><h1>Strength Log</h1><p>Your training, your rules. Customise every session.</p></header>
+<nav>
+<button class="active" data-page="home">Home</button>
+<button data-page="train">Workout</button>
+<button data-page="builder">Builder</button>
+<button data-page="history">History</button>
+<button data-page="settings">Settings</button>
+</nav>
+<main>
+<section id="home" class="active">
+ <div class="card">
+  <span class="pill">YOUR TRAINING DASHBOARD</span><h2 style="margin-top:10px">This week's progress</h2>
+  <div class="stats"><div class="stat"><b id="weekDone">0</b><small>Sessions done</small></div><div class="stat"><b id="exerciseCount">0</b><small>Exercises planned</small></div><div class="stat"><b id="planDays">4</b><small>Training days</small></div></div>
+  <div class="bar"><span id="weekProgress"></span></div><p id="weekHint">Consistency first. Progress at a pace you can recover from.</p>
+ </div>
+ <div class="card"><h2>Today's session</h2><p id="todaySession">Rest / recovery</p><div class="actions"><button class="btn primary" onclick="go('train')">Open workout</button><button class="btn" onclick="go('builder')">Customise plan</button></div></div>
+ <div class="card"><h2>Your weekly split</h2><div id="homeDays"></div></div>
+ <div class="card"><h2>Helpful reminders</h2><p>• Warm up before lifting and use controlled technique.</p><p>• Choose a weight you can manage comfortably.</p><p>• Stop if you feel pain, dizziness or unusual discomfort.</p><p>• Recovery, food and sleep matter as much as training.</p></div>
+</section>
+
+<section id="train">
+ <div class="card">
+  <h2>Start a workout</h2>
+  <label for="trainDay">Choose workout day</label><select id="trainDay" onchange="renderTrain()"></select>
+  <p class="small">Tick each exercise as you complete it. Your workout log is saved on this device.</p>
+  <div id="trainList"></div>
+  <label for="sessionNote">Session notes (optional)</label><textarea id="sessionNote" rows="2" placeholder="Energy, technique, how it felt..."></textarea>
+  <div class="actions"><button class="btn primary" onclick="saveSession()">Finish & save session</button><button class="btn" onclick="clearTicks()">Clear checks</button></div><p id="trainMsg" class="small"></p>
+ </div>
+</section>
+
+<section id="builder">
+ <div class="card">
+  <h2>Workout plan builder</h2>
+  <p>Add, edit, remove and organise exercises. Sets and reps are fully customisable.</p>
+  <label for="editDay">Choose a day to edit</label><select id="editDay" onchange="renderBuilder()"></select>
+  <div id="builderList"></div>
+  <div class="actions"><button class="btn primary" onclick="openAdd()">＋ Add exercise</button><button class="btn" onclick="renameDay()">Rename day</button></div>
+  <details><summary>Add a new training day</summary><label for="newDayName">Day name</label><input id="newDayName" placeholder="e.g. Wednesday · Core"><div class="actions"><button class="btn primary" onclick="addDay()">Create day</button></div></details>
+  <details><summary>Restore starter workout plan</summary><p>This replaces your current exercise plan with the original beginner plan. Your workout history remains.</p><button class="btn danger" onclick="restorePlan()">Restore starter plan</button></details>
+ </div>
+ <div class="card" id="exerciseForm" style="display:none">
+  <h2 id="formTitle">Add exercise</h2>
+  <input type="hidden" id="exerciseId">
+  <label for="exerciseName">Exercise name</label><input id="exerciseName" placeholder="e.g. Dumbbell floor press">
+  <div class="grid3">
+   <div><label for="exerciseSets">Sets</label><input id="exerciseSets" type="number" min="1" max="20" value="2"></div>
+   <div><label for="exerciseReps">Reps</label><input id="exerciseReps" placeholder="8–12"></div>
+   <div><label for="exerciseRest">Rest (sec)</label><input id="exerciseRest" type="number" min="0" max="600" value="60"></div>
+  </div>
+  <label for="exerciseNotes">Notes / equipment (optional)</label><input id="exerciseNotes" placeholder="e.g. Each side, light dumbbells">
+  <div class="actions"><button class="btn primary" onclick="saveExercise()">Save exercise</button><button class="btn" onclick="closeForm()">Cancel</button></div>
+ </div>
+</section>
+
+<section id="history">
+ <div class="card"><h2>Workout history</h2><p>Saved sessions and personal notes.</p><div id="historyList"></div></div>
+ <div class="card"><h2>Personal progress notes</h2>
+  <label for="progressDate">Date</label><input type="date" id="progressDate">
+  <label for="progressNote">What changed or improved?</label><textarea id="progressNote" rows="3" placeholder="Example: Better control on rows; felt energetic."></textarea>
+  <div class="actions"><button class="btn primary" onclick="addProgressNote()">Save progress note</button></div>
+  <div id="progressList"></div>
+ </div>
+</section>
+
+<section id="settings">
+ <div class="card"><h2>Personalise the app</h2>
+  <label for="profileName">Name / nickname</label><input id="profileName" placeholder="Optional">
+  <div class="grid2"><div><label for="startDate">Plan start date</label><input type="date" id="startDate"></div><div><label for="goal">Main focus</label><select id="goal"><option>Build strength</option><option>Build muscle</option><option>Improve fitness</option><option>General health</option></select></div></div>
+  <div class="grid2"><div><label for="warmup">Warm-up reminder (minutes)</label><input type="number" id="warmup" min="0" max="30"></div><div><label for="sleep">Sleep target (hours)</label><input type="number" id="sleep" min="6" max="12" step=".5"></div></div>
+  <label class="tick"><input type="checkbox" id="showRest"> Show rest / recovery days on home screen</label>
+  <div class="actions"><button class="btn primary" onclick="saveSettings()">Save preferences</button></div>
+ </div>
+ <div class="card"><h2>Privacy & backups</h2><p>Everything is stored in this browser's local storage. No account, analytics or server sync. Keep using the same browser and avoid clearing its site data.</p><div class="actions"><button class="btn" onclick="exportBackup()">Export backup</button><label class="btn" style="text-align:center;margin:0">Import backup<input type="file" accept="application/json" onchange="importBackup(event)" hidden></label></div><div class="actions"><button class="btn danger" onclick="eraseAll()">Erase all app data</button></div></div>
+</section>
+<footer>Strength Log · Offline-first · Data stays in this browser</footer>
+</main>
+<script>
+const starter=[
+ {id:"d1",name:"Monday · Upper A",items:[
+  ex("e1","Dumbbell floor press",2,"10–12",60),ex("e2","One-arm dumbbell row",2,"10–12 each side",60),ex("e3","Dumbbell shoulder press",2,"10",60),ex("e4","Dumbbell bicep curls",2,"12",45),ex("e5","Overhead triceps extension",2,"12",45)]},
+ {id:"d2",name:"Tuesday · Lower A + Core",items:[
+  ex("e6","Goblet squat",2,"10–12",60),ex("e7","Dumbbell Romanian deadlift",2,"10",60),ex("e8","Reverse lunge",2,"8 each leg",60),ex("e9","Standing calf raise",2,"15",45),ex("e10","Bird dog",2,"10 each side",30),ex("e11","Plank",2,"20–30 sec",45)]},
+ {id:"d3",name:"Wednesday · Recovery",items:[],rest:true},
+ {id:"d4",name:"Thursday · Upper B",items:[
+  ex("e12","Dumbbell floor press",2,"10",60),ex("e13","Bent-over dumbbell row",2,"10–12",60),ex("e14","Dumbbell lateral raise",2,"12",45),ex("e15","Hammer curl",2,"12",45),ex("e16","Dumbbell triceps kickback",2,"12",45)]},
+ {id:"d5",name:"Friday · Rest",items:[],rest:true},
+ {id:"d6",name:"Saturday · Lower B + Core",items:[
+  ex("e17","Split squat",2,"8 each leg",60),ex("e18","Glute bridge",2,"12",45),ex("e19","Dumbbell Romanian deadlift",2,"10",60),ex("e20","Standing calf raise",2,"15",45),ex("e21","Dead bug",2,"10 each side",30),ex("e22","Side plank",2,"15–20 sec each side",45)]},
+ {id:"d7",name:"Sunday · Rest",items:[],rest:true}
+];
+function ex(id,name,sets,reps,rest,notes=""){return{id,name,sets,reps,rest,notes}}
+const STORE="strengthLogCustomV2";
+function fresh(){return{days:JSON.parse(JSON.stringify(starter)),sessions:[],progress:[],checks:{},settings:{goal:"Build strength",warmup:5,sleep:9,showRest:true}}}
+let data=load();
+function load(){try{let v=JSON.parse(localStorage.getItem(STORE));return v&&v.days? v:fresh()}catch(e){return fresh()}}
+function save(){localStorage.setItem(STORE,JSON.stringify(data))}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function go(id){document.querySelectorAll("main section").forEach(x=>x.classList.toggle("active",x.id===id));document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("active",x.dataset.page===id));if(id==="home")renderHome();if(id==="train"){fillDaySelect("trainDay");renderTrain()}if(id==="builder"){fillDaySelect("editDay");renderBuilder()}if(id==="history")renderHistory()}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>go(b.dataset.page));
+function fillDaySelect(id){let s=document.getElementById(id),old=s.value;s.innerHTML=data.days.map(d=>`<option value="${d.id}">${esc(d.name)}</option>`).join("");if(data.days.some(d=>d.id===old))s.value=old}
+function weekStart(){let d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7));return d.toISOString().slice(0,10)}
+function renderHome(){let w=weekStart(),sessions=data.sessions.filter(s=>s.week===w);document.getElementById("weekDone").textContent=sessions.length;document.getElementById("exerciseCount").textContent=data.days.reduce((n,d)=>n+d.items.length,0);document.getElementById("planDays").textContent=data.days.filter(d=>d.items.length).length;let target=Math.max(1,data.days.filter(d=>d.items.length).length);document.getElementById("weekProgress").style.width=Math.min(100,sessions.length/target*100)+"%";document.getElementById("weekHint").textContent=sessions.length?"Nice work logging "+sessions.length+" session(s). Recovery matters too.":"Start with a comfortable pace. Technique comes first.";let todayIdx=(new Date().getDay()+6)%7,day=data.days[todayIdx];document.getElementById("todaySession").textContent=day?(day.items.length?day.name+" · "+day.items.length+" exercises":day.name):"No session scheduled";document.getElementById("homeDays").innerHTML=data.days.map(d=>`<div class="dayrow"><span>${esc(d.name)}</span><span class="pill">${d.items.length?d.items.length+" exercises":"Rest"}</span></div>`).join("")}
+function renderTrain(){let d=data.days.find(x=>x.id===document.getElementById("trainDay").value)||data.days[0];if(!d)return;document.getElementById("trainList").innerHTML=d.items.length?d.items.map(e=>`<div class="exercise"><div class="exerciseTop"><div><div class="exerciseName">${esc(e.name)}</div><div class="exerciseMeta">${e.sets} sets · ${esc(e.reps)} reps · ${e.rest||0}s rest ${e.notes?"· "+esc(e.notes):""}</div></div><span class="pill">${e.sets} × ${esc(e.reps)}</span></div><label class="tick"><input type="checkbox" ${data.checks[d.id+"_"+e.id]?"checked":""} onchange="toggleCheck('${d.id}_${e.id}',this.checked)"> Completed</label></div>`).join(""):'<p class="empty">This is a rest day. You can add exercises in Builder if you want to change it.</p>'}
+function toggleCheck(k,v){data.checks[k]=v;save()}
+function saveSession(){let d=data.days.find(x=>x.id===document.getElementById("trainDay").value);if(!d)return;if(!d.items.length){alert("This day has no exercises. Add exercises first if you want to log a workout.");return}let missing=d.items.filter(e=>!data.checks[d.id+"_"+e.id]);if(missing.length){if(!confirm(missing.length+" exercise(s) aren't ticked. Save this session anyway?"))return}data.sessions.unshift({id:"s"+Date.now(),day:d.name,date:new Date().toISOString().slice(0,10),week:weekStart(),completed:d.items.length-missing.length,total:d.items.length,note:document.getElementById("sessionNote").value.trim()});d.items.forEach(e=>delete data.checks[d.id+"_"+e.id]);document.getElementById("sessionNote").value="";save();document.getElementById("trainMsg").textContent="Session saved on this device.";renderHome()}
+function clearTicks(){let d=data.days.find(x=>x.id===document.getElementById("trainDay").value);if(d)d.items.forEach(e=>delete data.checks[d.id+"_"+e.id]);save();renderTrain()}
+function renderBuilder(){let d=data.days.find(x=>x.id===document.getElementById("editDay").value)||data.days[0];if(!d)return;document.getElementById("builderList").innerHTML=d.items.length?d.items.map((e,i)=>`<div class="exercise"><div class="exerciseTop"><div><div class="exerciseName">${esc(e.name)}</div><div class="exerciseMeta">${e.sets} sets · ${esc(e.reps)} reps · ${e.rest||0}s rest</div>${e.notes?`<div class="exerciseMeta">${esc(e.notes)}</div>`:""}</div><span class="pill">#${i+1}</span></div><div class="actions"><button class="btn" onclick="editExercise('${d.id}','${e.id}')">Edit</button><button class="btn" onclick="moveExercise('${d.id}','${e.id}',-1)">↑</button><button class="btn" onclick="moveExercise('${d.id}','${e.id}',1)">↓</button><button class="btn danger" onclick="deleteExercise('${d.id}','${e.id}')">Delete</button></div></div>`).join(""):'<p class="empty">No exercises yet. Add your first exercise below.</p>'}
+function openAdd(){document.getElementById("exerciseForm").style.display="block";document.getElementById("formTitle").textContent="Add exercise";document.getElementById("exerciseId").value="";document.getElementById("exerciseName").value="";document.getElementById("exerciseSets").value=2;document.getElementById("exerciseReps").value="8–12";document.getElementById("exerciseRest").value=60;document.getElementById("exerciseNotes").value="";document.getElementById("exerciseName").focus()}
+function closeForm(){document.getElementById("exerciseForm").style.display="none"}
+function editExercise(dayId,id){let e=data.days.find(d=>d.id===dayId).items.find(x=>x.id===id);document.getElementById("exerciseForm").style.display="block";document.getElementById("formTitle").textContent="Edit exercise";document.getElementById("exerciseId").value=id;document.getElementById("exerciseName").value=e.name;document.getElementById("exerciseSets").value=e.sets;document.getElementById("exerciseReps").value=e.reps;document.getElementById("exerciseRest").value=e.rest;document.getElementById("exerciseNotes").value=e.notes||""}
+function saveExercise(){let d=data.days.find(x=>x.id===document.getElementById("editDay").value);let name=document.getElementById("exerciseName").value.trim(),sets=Number(document.getElementById("exerciseSets").value),reps=document.getElementById("exerciseReps").value.trim(),rest=Number(document.getElementById("exerciseRest").value);if(!d||!name||!sets||!reps){alert("Please enter an exercise name, sets and reps.");return}let id=document.getElementById("exerciseId").value,e={id:id||"e"+Date.now(),name,sets,reps,rest:Number.isFinite(rest)?rest:60,notes:document.getElementById("exerciseNotes").value.trim()};let idx=d.items.findIndex(x=>x.id===id);if(idx>=0)d.items[idx]=e;else d.items.push(e);save();closeForm();renderBuilder();fillDaySelect("trainDay")}
+function deleteExercise(dayId,id){if(!confirm("Remove this exercise from the plan?"))return;let d=data.days.find(x=>x.id===dayId);d.items=d.items.filter(e=>e.id!==id);delete data.checks[dayId+"_"+id];save();renderBuilder()}
+function moveExercise(dayId,id,delta){let a=data.days.find(x=>x.id===dayId).items,i=a.findIndex(e=>e.id===id),j=i+delta;if(j<0||j>=a.length)return;[a[i],a[j]]=[a[j],a[i]];save();renderBuilder()}
+function addDay(){let n=document.getElementById("newDayName").value.trim();if(!n){alert("Enter a day name.");return}data.days.push({id:"d"+Date.now(),name:n,items:[]});document.getElementById("newDayName").value="";save();fillDaySelect("editDay");fillDaySelect("trainDay");document.getElementById("editDay").value=data.days[data.days.length-1].id;renderBuilder();renderHome()}
+function renameDay(){let d=data.days.find(x=>x.id===document.getElementById("editDay").value);if(!d)return;let n=prompt("Rename this training day:",d.name);if(n&&n.trim()){d.name=n.trim();save();fillDaySelect("editDay");fillDaySelect("trainDay");renderBuilder();renderHome()}}
+function restorePlan(){if(!confirm("Replace your current workout plan with the starter plan? Your saved session history and notes will remain."))return;data.days=JSON.parse(JSON.stringify(starter));data.checks={};save();fillDaySelect("editDay");fillDaySelect("trainDay");renderBuilder();renderHome()}
+function renderHistory(){document.getElementById("historyList").innerHTML=data.sessions.length?data.sessions.map((s,i)=>`<div class="entryrow"><div><b>${esc(s.day)}</b><div class="small muted">${s.date} · ${s.completed}/${s.total} exercises completed</div>${s.note?`<p>${esc(s.note)}</p>`:""}</div><button class="btn danger" onclick="deleteSession('${s.id}')">Delete</button></div>`).join(""):'<p class="empty">No completed sessions yet.</p>';document.getElementById("progressList").innerHTML=data.progress.length?data.progress.map((p,i)=>`<div class="entryrow"><div><b>${p.date}</b><p>${esc(p.note)}</p></div><button class="btn danger" onclick="deleteProgress(${i})">Delete</button></div>`).join(""):'<p class="empty">No progress notes yet.</p>'}
+function deleteSession(id){data.sessions=data.sessions.filter(s=>s.id!==id);save();renderHistory();renderHome()}
+function addProgressNote(){let n=document.getElementById("progressNote").value.trim();if(!n){alert("Write a short note first.");return}data.progress.unshift({date:document.getElementById("progressDate").value||new Date().toISOString().slice(0,10),note:n});document.getElementById("progressNote").value="";save();renderHistory()}
+function deleteProgress(i){data.progress.splice(i,1);save();renderHistory()}
+function saveSettings(){data.settings.name=document.getElementById("profileName").value;data.settings.start=document.getElementById("startDate").value;data.settings.goal=document.getElementById("goal").value;data.settings.warmup=document.getElementById("warmup").value;data.settings.sleep=document.getElementById("sleep").value;data.settings.showRest=document.getElementById("showRest").checked;save();alert("Preferences saved on this device.")}
+function initSettings(){let s=data.settings;document.getElementById("profileName").value=s.name||"";document.getElementById("startDate").value=s.start||"";document.getElementById("goal").value=s.goal||"Build strength";document.getElementById("warmup").value=s.warmup??5;document.getElementById("sleep").value=s.sleep??9;document.getElementById("showRest").checked=s.showRest!==false;document.getElementById("progressDate").value=new Date().toISOString().slice(0,10)}
+function exportBackup(){let blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="strength-log-backup.json";a.click();URL.revokeObjectURL(a.href)}
+function importBackup(ev){let f=ev.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let v=JSON.parse(r.result);if(!Array.isArray(v.days)||!Array.isArray(v.sessions)||!Array.isArray(v.progress))throw Error();data=v;save();initSettings();fillDaySelect("editDay");fillDaySelect("trainDay");renderHome();renderBuilder();renderHistory();alert("Backup imported.");}catch(e){alert("This file doesn't look like a valid Strength Log backup.")}};r.readAsText(f)}
+function eraseAll(){if(!confirm("Permanently erase all Strength Log data from this browser? Export a backup first if you want to keep it."))return;localStorage.removeItem(STORE);data=fresh();save();initSettings();fillDaySelect("editDay");fillDaySelect("trainDay");renderHome();renderBuilder();renderHistory()}
+initSettings();fillDaySelect("editDay");fillDaySelect("trainDay");renderHome();renderTrain();renderBuilder();renderHistory();
+</script>
+</body></html>
