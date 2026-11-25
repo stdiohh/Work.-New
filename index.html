@@ -3,6 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Strength Log: customise workouts and track training offline.">
+<meta name="theme-color" content="#101827">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icons/icon-192.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./icons/icon-192.svg">
 <meta name="theme-color" content="#101827">
 <title>Strength Log</title>
 <style>
@@ -166,5 +171,13 @@ function exportBackup(){let blob=new Blob([JSON.stringify(data,null,2)],{type:"a
 function importBackup(ev){let f=ev.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let v=JSON.parse(r.result);if(!Array.isArray(v.days)||!Array.isArray(v.sessions)||!Array.isArray(v.progress))throw Error();data=v;save();initSettings();fillDaySelect("editDay");fillDaySelect("trainDay");renderHome();renderBuilder();renderHistory();alert("Backup imported.");}catch(e){alert("This file doesn't look like a valid Strength Log backup.")}};r.readAsText(f)}
 function eraseAll(){if(!confirm("Permanently erase all Strength Log data from this browser? Export a backup first if you want to keep it."))return;localStorage.removeItem(STORE);data=fresh();save();initSettings();fillDaySelect("editDay");fillDaySelect("trainDay");renderHome();renderBuilder();renderHistory()}
 initSettings();fillDaySelect("editDay");fillDaySelect("trainDay");renderHome();renderTrain();renderBuilder();renderHistory();
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js")
+      .catch((error) => console.error("Strength Log offline setup failed:", error));
+  });
+}
 </script>
 </body></html>
